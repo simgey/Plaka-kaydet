@@ -1,0 +1,495 @@
+#include<string.h>
+#include <stdio.h>
+#include<stdlib.h>
+#include<Math.h>
+#include<ctype.h>
+
+
+typedef struct Plaka //İllerin alt dizileri
+{
+    int  PlakaNumeric;
+    char PlakaHarf[3];
+}A;
+typedef struct Indexer  //81 il i temsil ediyor
+{
+    int PlakaSayisi; //Her il için kaç plaka kaydedilmiş
+    struct Plaka *ptr;  //Her bir il için olan pointer
+    
+}S;
+int Menu(struct Indexer *Anadizi)
+{
+    int x;
+    printf("Secmek istediğiniz islemi seciniz:\n");
+    printf("1-Plaka Ekle:\n");
+    printf("2-Sehire Ozel ve Genel PlakaSorgulama,Kaydetme:\n");//Dosyaya yazma işlemi eklendi
+    printf("3-Plaka Sorgulama:\n");
+    printf("4-Toplam Kac Plaka Oldugunu Sorgulamak İcin :\n");
+    printf("5-Sistemdeki Kayitli Verileri Göster: \n");//Dosyadan veri okuma
+    printf("6-Cık:\n");
+    scanf("%d",&x);
+    FILE *dosya;
+    
+    switch(x)
+    {
+        case 1 :
+        {
+            Pgir(Anadizi);
+            break;
+            
+        }
+        case 2 :
+        {
+            PListele(Anadizi,dosya);
+            break;
+        }
+            
+            
+        case 3 :
+        {
+            PSorgula(Anadizi);
+            break;
+        }
+        case 4 :
+        {
+            ToplamPlaka(Anadizi);
+            break;
+        }
+        case 5://Dosyadan okuma
+        {
+            Dosyadanoku(dosya);
+            break;
+        }
+        case 6:
+        {   FILE *Kayit;
+            struct Plaka p;
+            Kayit=fopen("/Users/simgeyvs/Desktop/bbg/ÖDEV2/ÖDEV2/ÖDEV2/Yenidosya.doc","w");
+            int i,j,m;
+            if(Kayit==NULL)
+            {
+                printf("Beklenmeyen bir hata oluştu!!!");
+            }
+            
+            for(i=1;i<81;i++)
+            {
+                if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+                {
+                    
+                    for(j=0;j<Anadizi[i].PlakaSayisi;j++)// o indisteki plaka sayisi kadar çalışıyor.
+                    {
+                       fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                       fwrite(&Anadizi[i].ptr[j].PlakaNumeric,sizeof(struct Plaka),1,Kayit);
+                        //fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                    }
+                    
+                }
+            }
+            
+            fclose(Kayit);
+            
+            return -1;
+            break;
+        }
+    }
+    return 0;
+}
+
+int Dosyadanoku(struct Indexer *Anadizi ,FILE *dosya)
+{
+    
+    return 0;
+}
+
+
+
+int DosyayaKaydet(int Sehirkodux,int x,FILE *dosya,struct Indexer *Anadizi)
+{
+    int i,m,j;
+  
+    switch(x)
+    {
+        case 1://Sehire göre listelemede kaydet
+        {
+            char Dizi[20]="plakar_";//Dosya adını oluşturmak  istenilen formatı bölümlere ayırdım ve dizilere attım.
+            char Sehir[10];
+            char  uzanti[10]=".txt";//Bu dizileri strcat ile birleştirerek sehirkoduna özel dosya adını elde ediyorum.
+            sprintf(Sehir,"%d",Sehirkodux);  // Sehirkodu ifadesini katara atar.
+            
+            strcat(Sehir,uzanti);
+            strcat(Dizi,Sehir);
+            
+            dosya=fopen(Dizi,"w");
+            
+            if(dosya==NULL)
+            {
+                printf("Beklenmeyen Bir Hata Olustu!!");
+                return -1;
+            }
+            
+            for(i=0;i<Anadizi[Sehirkodux].PlakaSayisi;i++)//Eklenen plaka sayısı kadar çalışıyor.
+            {
+              fprintf(dosya,"%d-",i);
+                for(m=0;m<3;m++)
+                {
+                    
+                    fputc(Anadizi[Sehirkodux].ptr[i].PlakaHarf[m],dosya);
+                    
+                }
+                fprintf(dosya,"-%d\n",Anadizi[Sehirkodux].ptr[i].PlakaNumeric);
+                
+                
+            }
+            
+             fclose(dosya);
+            printf("Verilerinizin Kaydedildiği Dosyanın Adi-->");
+             puts(Dizi);
+                break;
+            }
+        
+        case 2://Genel listeleme kaydet
+            {
+               
+            dosya=fopen("plakalar.txt","w");
+                
+                if(dosya==NULL)
+                {
+                    printf("Beklenmeyen Bir Hata Olustu!!");
+                    return -1;
+                }
+                fprintf(dosya,"%d",Anadizi[0].PlakaSayisi);
+                for(i=1;i<81;i++)
+                {
+                    if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+                    {
+                        
+                        for(j=0;j<Anadizi[i].PlakaSayisi;j++)
+                        {
+                            fprintf(dosya,"\n%d-",i);
+                            for(m=0;m<2;m++)
+                            {
+                                fputc(Anadizi[i].ptr[j].PlakaHarf[m],dosya);
+                                
+                            }
+                            fprintf(dosya,"-%d\n",Anadizi[i].ptr[j].PlakaNumeric);
+                            
+                            
+                        }
+                    }
+                }
+                printf("Verilerinizin Kaydedildiği Dosya Adı-->plakar.txt");
+                fclose(dosya);
+                break;
+                
+            }
+        }
+            return 0;
+}
+   
+int Pgir(struct Indexer *Anadizi) //plakaların kaydedildiği fonk. parametre olarak anadiziyi aliyor.(Plaka harf kodunda büyük küçük harf kontrolü yok)
+
+{
+    int x,t,i=0;
+    
+    
+    printf("Sehir Kodunu Giriniz:");
+    scanf("%d",&x);
+    if(Anadizi[x].PlakaSayisi==0)//Sehire hiç plaka kaydedilmemiş ise sehire plaka kaydetmek için bir alt dizi olusturuyoruz.
+    {
+        Anadizi[x].ptr=(struct Plaka*)malloc(sizeof(struct Plaka)*1);//plaka sayısı kadar yer ayrılıyor.
+    }
+    printf("Sehrin Harf Kodunu Giriniz:");
+    scanf("%s",&Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaHarf);
+    int uzunluk=strlen(Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaHarf);//plakaharf kodunun uzunluğunu alıyoruz.
+    
+    
+    if(uzunluk>3 ||  uzunluk<2)
+    {   printf("**********UYARI**********\n");
+        printf("Plaka Harf Kodu En Az 2 En Cok 3 Harf Olmalıdır\n");
+        printf("*************************\n");
+        Menu(Anadizi);
+    }
+    int uzunluk2=0,kalan=0;
+    printf("Sehrin Sayi Kodunu Giriniz:");
+    scanf("%d",&Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaNumeric);
+    int m=Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaNumeric;
+    while(m!=0) //plakanumeric 0 olmadığı sürece 10 a bölerek uzunluğunu alıyoruz;
+    {
+        m/=10;
+        uzunluk2++;
+        
+    }
+    
+    if(uzunluk2<2 || uzunluk2>4  || Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaNumeric==0)
+    {
+        printf("**********UYARI**********\n");
+        printf("Plaka Sayi Kodu En az 2 En Cok 4 Sayi Olmali Ve 0 ile Baslamamalıdır\n");
+        printf("*************************\n");
+        Menu(Anadizi);
+    }
+    
+    for(i=0;i<Anadizi[x].PlakaSayisi;i++)//Plaka önceden kayıtlı ise plakanın kaydedilmesine izin verilmiyor.(Sehir bazında kontrol ediliyor.Aynı plaka baska ilde varsa kayıt ediliyor)
+    {
+        if(Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaNumeric==Anadizi[x].ptr[i].PlakaNumeric)
+        {
+            if(Anadizi[x].ptr[Anadizi[x].PlakaSayisi].PlakaHarf[i]==Anadizi[x].ptr[i].PlakaHarf[i])
+            {
+                printf("Plaka Kayıtlı Kayıt EDEMEZSİNİZ!!!");
+                Menu(Anadizi);
+            }
+        }
+    }
+    Anadizi[x].PlakaSayisi++;//Sehrin plaka sayısını arttırıyoruz.
+    Anadizi[0].PlakaSayisi++;//Her plaka kaydedildiğinde toplam plaka sayısını arttıyoruz.
+    Anadizi[x].ptr=(struct Plaka*)realloc(Anadizi[x].ptr,1);//Her plaka eklendiğide dizi  boyutunu 1 arttırıyoruz.
+    printf("Plakanız Kaydedilmiştir.\n");
+    printf("Yeni işlem yapmak için 0 a ,programdan cikmak icin 1 e basınız \n");
+    scanf("%d",&t);
+    
+    if(t==0)
+    {
+        Menu(Anadizi);
+    }
+    if(t==1)//binary dosyaya kaydet
+    {
+        FILE *Kayit;
+        
+        struct Plaka p;
+        Kayit=fopen("Yenidosya","w+");
+        int i,j,m;
+        if(Kayit==NULL)
+        {
+            printf("Beklenmeyen bir hata oluştu!!!");
+        }
+        
+        for(i=1;i<81;i++)
+        {
+            if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+            {
+                
+                for(j=0;j<Anadizi[i].PlakaSayisi;j++)// o indisteki plaka sayisi kadar çalışıyor.
+                {
+                    fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                    fwrite(&Anadizi[i].ptr[j].PlakaNumeric,sizeof(struct Plaka),1,Kayit);
+                    //fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                }
+                
+            }
+        }
+    }
+   
+    
+    
+    
+    return 0;
+}
+int PListele(struct Indexer *Anadizi,FILE *dosya)
+{   int i,j,m,t,z,sehirkodu=0;
+    printf("1-Sehir e Ozel Sorgulama \n");
+    printf("2-Genel Sorgulama \n");
+    scanf("%d",&z);
+    switch(z)
+    {
+        case 1:
+        {
+            printf("Sehir Kodunu Giriniz:\n");
+            scanf("%d",&sehirkodu);
+            for(i=0;i<Anadizi[sehirkodu].PlakaSayisi;i++)//Eklenen plaka sayısı kadar çalışıyor.
+            {
+                printf("%d.plaka\n",i+1);
+                for(m=0;m<2;m++)
+                {
+                    printf("%c",Anadizi[sehirkodu].ptr[i].PlakaHarf[m]);
+                    
+                }
+                printf("-%d\n",Anadizi[sehirkodu].ptr[i].PlakaNumeric);
+                
+                
+            }
+            int secim;
+            printf("Verileri kaydetmek için 0 ı baska islem yapmak icin 1 i tuslayınız: \n");
+            scanf("%d",&secim);
+            
+            if(secim==0)
+            {
+                DosyayaKaydet(sehirkodu,z,dosya,Anadizi);
+            }
+            if(secim==1)
+            {
+                Menu(Anadizi);
+            }
+            break;
+        }
+        case 2:
+        {
+            for(i=1;i<81;i++)
+            {
+                if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+                {
+                    printf("Plaka Kodu %d olan  ilin Plakaları\n",i);
+                    for(j=0;j<Anadizi[i].PlakaSayisi;j++)
+                    {
+                        printf("%d.plaka\n",j+1 );
+                        for(m=0;m<2;m++)
+                        {
+                            printf("%c",Anadizi[i].ptr[j].PlakaHarf[m]);
+                            
+                        }
+                        printf("-%d\n",Anadizi[i].ptr[j].PlakaNumeric);
+                        
+                        
+                    }
+                }
+            }
+            int secim;
+            printf("Verileri kaydetmek için 0 ı baska islem yapmak icin 1 i tuslayınız: \n");
+            scanf("%d",&secim);
+            
+            if(secim==0)
+            {
+                DosyayaKaydet(sehirkodu,z,dosya,Anadizi);
+            }
+            if(secim==1)
+            {
+                Menu(Anadizi);
+            }
+            
+            break;
+        }
+    }
+    
+    
+    printf("Yeni işlem yapmak için 0 a ,programdan cikmak icin 1 e basınız\n");
+    scanf("%d",&t);
+    
+    if(t==0)
+    {
+        Menu(Anadizi);
+    }
+    return -1;
+}
+int PSorgula(struct Indexer * Anadizi)//Plakanın kayıtlı olup olamdığını sorguladığımız fonk.
+{
+    int Sehirplaka,plakanNumeric,t;
+    char PlakaHarf1[3];
+    int i;
+    printf("Sehir kodunu giriniz:");
+    scanf("%d",&Sehirplaka);
+    printf("Sehrin Harf Kodunu Giriniz:");
+    scanf("%s",&PlakaHarf1);
+    printf("Sehrin Sayi Kodunu Giriniz:");
+    scanf("%d",&plakanNumeric);
+    for(i=0;i<Anadizi[Sehirplaka].PlakaSayisi;i++)
+    {
+        
+        if(plakanNumeric==Anadizi[Sehirplaka].ptr[i].PlakaNumeric)
+        {
+            if(PlakaHarf1[i]==Anadizi[Sehirplaka].ptr[i].PlakaHarf[i])
+            {
+                printf("Plaka Sistemde Kayıtlı\n");
+                
+            }
+            
+        }
+        else
+        {
+            printf("Plaka Sisteme Kayıtlı Değildir\n");        }
+        
+    }
+    
+    
+    printf("Yeni işlem yapmak için 0 a ,programdan cikmak icin 1 e basınız\n");
+    scanf("%d",&t);
+    
+    if(t==0)
+    {
+        Menu(Anadizi);
+    }
+    if(t==1)//binary dosyaya kaydet
+    {
+        FILE *Kayit;
+        
+        struct Plaka p;
+        Kayit=fopen("Yenidosya","w+");
+        int i,j,m;
+        if(Kayit==NULL)
+        {
+            printf("Beklenmeyen bir hata oluştu!!!");
+        }
+        
+        for(i=1;i<81;i++)
+        {
+            if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+            {
+                
+                for(j=0;j<Anadizi[i].PlakaSayisi;j++)// o indisteki plaka sayisi kadar çalışıyor.
+                {
+                    fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                    fwrite(&Anadizi[i].ptr[j].PlakaNumeric,sizeof(struct Plaka),1,Kayit);
+                    //fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                }
+                
+            }
+        }
+    }
+    
+    return 0;
+}
+int ToplamPlaka(struct Indexer *Anadizi)
+{
+    int t;
+    printf("Programımıza kayıtlı toplam %d adet plaka vardır\n",Anadizi[0].PlakaSayisi);
+    printf("Yeni işlem yapmak için 0 a ,programdan cikmak icin 1 e basınız\n");
+    scanf("%d",&t);
+    
+    if(t==0)
+    {
+        Menu(Anadizi);
+    }
+   if(t==1)//binary dosyaya kaydet
+    {
+        FILE *Kayit;
+        
+        struct Plaka p;
+        Kayit=fopen("Yenidosya","w+");
+        int i,j,m;
+        if(Kayit==NULL)
+        {
+            printf("Beklenmeyen bir hata oluştu!!!");
+        }
+        
+        for(i=1;i<81;i++)
+        {
+            if(Anadizi[i].PlakaSayisi!=0)//Sehire plaka eklenmiş ise yazdırılıyor.
+            {
+                
+                for(j=0;j<Anadizi[i].PlakaSayisi;j++)// o indisteki plaka sayisi kadar çalışıyor.
+                {
+                    fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                    fwrite(&Anadizi[i].ptr[j].PlakaNumeric,sizeof(struct Plaka),1,Kayit);
+                    //fwrite(&Anadizi[i].ptr[j].PlakaHarf,sizeof(struct Plaka),1,Kayit);
+                }
+                
+            }
+        }
+    }
+    return 0;
+    
+}
+
+int main()
+
+{
+    int i;
+    struct Indexer *Anadizi=(struct Indexer*)malloc(sizeof(struct Indexer)*82);//Ana dizimiz
+   
+    for(i=1;i<82;i++)
+    {
+        Anadizi[i].PlakaSayisi=0;//En başta bütün illerin plaka sayilalrını 0 a eşitliyoruz.
+    }
+    
+    
+    
+    Menu(Anadizi);
+   
+    return 0;
+}
+
